@@ -13,7 +13,7 @@
     "bg": "/data/games/minecraft/banner.png",
     "description": "Explore infinite worlds and build everything from the simplest of homes to the grandest of castles. Play in creative mode with unlimited resources.",
     "file_src": "/data/games/minecraft/game.html",
-    "featured": false
+    "featured": true
   },
   {
     "name": "Undertale",
