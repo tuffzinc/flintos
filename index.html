@@ -10,11 +10,12 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #000;
-            color: #fff;
+            background-color: #000000;
+            color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
             user-select: none;
+            -webkit-user-select: none;
         }
     </style>
 </head>
@@ -27,6 +28,7 @@
             constructor() {
                 super();
                 this.attachShadow({ mode: 'open' });
+                this.currentActiveFileSrc = '';
             }
 
             async connectedCallback() {
@@ -48,21 +50,23 @@
                     } else {
                         this.loadView('/public/home.html');
                     }
-                }, 2000);
+                }, 2200);
             }
 
             async loadView(filename) {
                 try {
                     const response = await fetch(filename);
+                    if (!response.ok) throw new Error(`Failed to load ${filename}`);
                     const html = await response.text();
                     this.container.innerHTML = html;
-                    this.bindEvents();
+                    this.bindEvents(filename);
                 } catch (err) {
-                    console.error("Error loading view:", err);
+                    console.error("FlintOS Core Error loading view:", err);
                 }
             }
 
-            bindEvents() {
+            bindEvents(currentView) {
+                // Welcome Screen Event
                 const enterBtn = this.shadowRoot.getElementById('enter-home');
                 if (enterBtn) {
                     enterBtn.addEventListener('click', () => {
@@ -71,6 +75,7 @@
                     });
                 }
 
+                // Navigation Events
                 const storeBtn = this.shadowRoot.getElementById('store-btn');
                 if (storeBtn) {
                     storeBtn.addEventListener('click', () => this.loadView('/public/store.html'));
@@ -80,12 +85,88 @@
                 if (backBtn) {
                     backBtn.addEventListener('click', () => this.loadView('/public/home.html'));
                 }
+
+                const playBtn = this.shadowRoot.getElementById('play-btn');
+                if (playBtn) {
+                    playBtn.addEventListener('click', () => {
+                        alert(`Launching System Subprocess: \n${this.currentActiveFileSrc}`);
+                    });
+                }
                 
                 const timeEl = this.shadowRoot.getElementById('current-time');
-                if(timeEl) {
-                    const now = new Date();
-                    timeEl.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                if (timeEl) {
+                    const updateTime = () => {
+                        const now = new Date();
+                        timeEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    };
+                    updateTime();
                 }
+
+                if (currentView === '/public/home.html') {
+                    this.loadGamesData();
+                }
+            }
+
+            async loadGamesData() {
+                try {
+                    const response = await fetch('/data/games.json');
+                    const games = await response.json();
+                    this.renderGames(games);
+                } catch (error) {
+                    console.error("FlintOS FileSystem Error reading games.json:", error);
+                }
+            }
+
+            renderGames(games) {
+                const appRow = this.shadowRoot.getElementById('dynamic-app-row');
+                if (!appRow) return;
+
+                const storeBtn = this.shadowRoot.getElementById('store-btn');
+                appRow.innerHTML = '';
+                if (storeBtn) appRow.appendChild(storeBtn);
+
+                games.forEach((game) => {
+                    const icon = document.createElement('div');
+                    icon.className = 'app-icon';
+                    icon.style.backgroundImage = `url('${game.image}')`;
+                    icon.style.backgroundSize = 'cover';
+                    icon.style.backgroundPosition = 'center';
+                    
+                    icon.addEventListener('click', () => this.updateDashboardHero(game, icon));
+                    appRow.appendChild(icon);
+
+                    if (game.featured) {
+                        this.updateDashboardHero(game, icon);
+                    }
+                });
+
+                const libraryIcon = document.createElement('div');
+                libraryIcon.className = 'app-icon library-icon';
+                libraryIcon.style.background = 'rgba(255,255,255,0.05)';
+                libraryIcon.style.display = 'flex';
+                libraryIcon.style.alignItems = 'center';
+                libraryIcon.style.justifyContent = 'center';
+                libraryIcon.style.fontSize = '11px';
+                libraryIcon.style.color = 'rgba(255,255,255,0.6)';
+                libraryIcon.textContent = 'Library';
+                appRow.appendChild(libraryIcon);
+            }
+
+            updateDashboardHero(game, selectedIcon) {
+                this.shadowRoot.querySelectorAll('.app-icon').forEach(el => el.classList.remove('active'));
+                selectedIcon.classList.add('active');
+
+                this.currentActiveFileSrc = game.file_src;
+
+                const screen = this.shadowRoot.getElementById('home-screen');
+                const title = this.shadowRoot.getElementById('hero-title');
+                const desc = this.shadowRoot.getElementById('hero-desc');
+
+                if (screen) {
+                    screen.style.backgroundImage = `linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.9) 100%), url('${game.bg}')`;
+                }
+                if (title) title.textContent = game.name;
+                if (desc) desc.textContent = game.description;
             }
         }
 
