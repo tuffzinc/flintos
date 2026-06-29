@@ -1,10 +1,10 @@
 [
   {
     "name": "Grand Theft Auto: Vice City",
-    "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&q=80",
-    "bg": "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=2000",
+    "image": "games/gtavicecity/logo.png",
+    "bg": "games/gtavicecity/banner.png",
     "description": "Welcome back to the 1980s. From the decade of big hair, excess and pastel suits comes a story of one man's rise to the top of the criminal pile.",
-    "file_src": "/games/gtavc/main.js",
+    "file_src": "games/gtavicecity/game.html",
     "featured": true
   },
   {
