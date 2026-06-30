@@ -33,10 +33,10 @@
   },
   {
     "name": "Totally Accurate Battle Simulator",
-    "image": "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=150&q=80",
-    "bg": "https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=2000",
-    "description": "Be the leader of red and blue wobblers from ancient lands, spooky places, and fantasy worlds. Watch them fight in simulations made with the wobblest physics ever created.",
-    "file_src": "/games/tabs/tabs_data.wasm",
-    "featured": false
+    "image": "/data/games/tabs/logo.png",
+    "bg": "/data/games/tabs/banner.png",
+    "description": "a hilarious, physics-based tactical strategy game developed by Landfall.",
+    "file_src": "/data/games/tabs/game.html",
+    "featured": true
   }
 ]
