@@ -73,7 +73,7 @@
         border: 1px solid transparent;
         position: relative;
         overflow: hidden;
-        /* FIXED: Force no-repeat directly onto layouts to fix fractional pixel bleeds */
+        /* FIXED: Forces browser render layers to snap without fractional trailing edge bleeding */
         background-repeat: no-repeat !important;
     }
     .store-item > * { position: relative; z-index: 2; }
@@ -83,7 +83,7 @@
         box-shadow: 0 10px 24px rgba(0, 112, 204, 0.45);
     }
     .item-title { margin: 0; font-size: 1.1rem; font-weight: 500; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-    .item-price { color: #fff; font-weight: bold; margin-top: 8px; font-size: 0.85rem; background: #0070cc; padding: 5px 12px; border-radius: 6px; align-self: flex-start; display: flex; align-items: center; }
+    .item-price { color: #fff; font-weight: bold; margin-top: 8px; font-size: 0.85rem; background: #0070cc; padding: 5px 12px; border-radius: 6px; align-self: flex-start; display: flex; align-items: center; transition: background 0.2s; }
     
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 </style>
@@ -96,6 +96,8 @@
     <div class="store-nav">
         <span class="active">All Software</span>
         <span>Collections</span>
+        <span>Deals</span>
+        <span>Subscriptions</span>
     </div>
     
     <div class="store-grid" id="dynamic-store-grid"></div>
