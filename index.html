@@ -203,10 +203,9 @@ renderHomeGames(games) {
     const appRow = this.shadowRoot.getElementById('dynamic-app-row');
     if (!appRow) return;
 
-    // Clear row first
     appRow.innerHTML = '';
 
-    // FIX #1: Dynamically create and append the Store Button directly in JS
+    // Dynamically generate Store button
     const storeBtn = document.createElement('div');
     storeBtn.className = 'app-icon store-btn system-btn';
     storeBtn.id = 'store-btn';
@@ -214,7 +213,7 @@ renderHomeGames(games) {
     storeBtn.addEventListener('click', () => this.loadView('/public/store.html'));
     appRow.appendChild(storeBtn);
 
-    // Safe localStorage parsing
+    // Bulletproof localStorage extraction
     let savedIds = [];
     try {
         savedIds = JSON.parse(localStorage.getItem('flintos_saved')) || [];
@@ -223,7 +222,7 @@ renderHomeGames(games) {
         savedIds = [];
     }
 
-    // Type-safe string comparison to prevent number/string mismatch bugs
+    // Type-safe matching
     const savedGames = games.filter(game => savedIds.some(id => String(id) === String(game.id)));
 
     savedGames.forEach((game) => {
@@ -238,7 +237,7 @@ renderHomeGames(games) {
         appRow.appendChild(icon);
     });
 
-    // Create and Append Library Icon Node with Event Listener
+    // Dynamically generate Library button
     const libraryIcon = document.createElement('div');
     libraryIcon.className = 'app-icon library-icon system-btn';
     libraryIcon.style.background = 'rgba(255,255,255,0.05)';
@@ -249,11 +248,9 @@ renderHomeGames(games) {
     libraryIcon.style.color = 'rgba(255,255,255,0.6)';
     libraryIcon.style.flexDirection = 'column';
     libraryIcon.innerHTML = `<i class="fas fa-layer-group" style="margin-bottom:4px; font-size:14px; display:block; text-align:center;"></i><span>Library</span>`;
-    
     libraryIcon.addEventListener('click', () => this.loadView('/public/library.html'));
     appRow.appendChild(libraryIcon);
 
-    // Get references to the visibility containers
     const heroContent = this.shadowRoot.getElementById('hero-content');
     const emptyState = this.shadowRoot.getElementById('empty-state');
 
@@ -262,7 +259,6 @@ renderHomeGames(games) {
         if (firstGameIcon) {
             this.updateDashboardHero(savedGames[0], firstGameIcon);
         }
-        
         if (heroContent) heroContent.style.display = 'block';
         if (emptyState) emptyState.style.display = 'none';
     } else {
@@ -293,7 +289,6 @@ renderStoreGames(games) {
     }
 
     games.forEach((game) => {
-        // Safe string-based matching for rendering initial states
         const isSaved = savedIds.some(id => String(id) === String(game.id));
         const item = document.createElement('div');
         item.className = 'store-item';
@@ -309,7 +304,6 @@ renderStoreGames(games) {
             </div>
         `;
         
-        // FIX #2: Extract fresh localStorage list inside the click event to prevent stale arrays
         item.onclick = () => {
             let currentSavedIds = [];
             try {
@@ -323,8 +317,10 @@ renderStoreGames(games) {
 
             if (!alreadySaved) {
                 currentSavedIds.push(game.id);
-                localStorage.setItem('flintos_saved', JSON.stringify(currentSavedIds));
-                this.renderStoreGames(games); // Re-render instantly updates the store UI cards
+                // Purge duplicate IDs just in case they slipped in
+                const cleanIds = [...new Set(currentSavedIds)];
+                localStorage.setItem('flintos_saved', JSON.stringify(cleanIds));
+                this.renderStoreGames(games); 
             } else {
                 this.launchIframeRuntime(game.file_src);
             }
@@ -334,43 +330,52 @@ renderStoreGames(games) {
     });
 }
 
-            renderLibraryGames(games) {
-                const libraryGrid = this.shadowRoot.getElementById('dynamic-library-grid');
-                if (!libraryGrid) return;
+renderLibraryGames(games) {
+    const libraryGrid = this.shadowRoot.getElementById('dynamic-library-grid');
+    if (!libraryGrid) return;
 
-                libraryGrid.innerHTML = '';
-                const savedIds = JSON.parse(localStorage.getItem('flintos_saved')) || [];
-                const libraryGames = games.filter(game => savedIds.includes(game.id));
+    libraryGrid.innerHTML = '';
+    
+    let savedIds = [];
+    try {
+        savedIds = JSON.parse(localStorage.getItem('flintos_saved')) || [];
+        if (!Array.isArray(savedIds)) savedIds = [];
+    } catch (e) {
+        savedIds = [];
+    }
 
-                if (libraryGames.length === 0) {
-                    libraryGrid.innerHTML = `
-                        <div class="empty-library-msg">
-                            <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
-                            <p>Your workspace is empty. Save games from the software store.</p>
-                        </div>
-                    `;
-                    return;
-                }
+    // Fixed: Now using the exact same type-safe matching as the other screens
+    const libraryGames = games.filter(game => savedIds.some(id => String(id) === String(game.id)));
 
-                libraryGames.forEach((game) => {
-                    const item = document.createElement('div');
-                    item.className = 'store-item';
-                    item.style.background = `linear-gradient(to top, rgba(3, 5, 10, 0.95) 20%, rgba(3, 5, 10, 0.2) 100%), url('${game.bg || game.image}') center/cover`;
-                    
-                    item.innerHTML = `
-                        <div class="store-item-details">
-                            <p class="item-title">${game.name}</p>
-                            <p class="item-price launch-badge"><i class="fas fa-play" style="font-size:10px; margin-right:6px;"></i> Launch</p>
-                        </div>
-                    `;
-                    
-                    item.onclick = () => {
-                        this.launchIframeRuntime(game.file_src);
-                    };
-                    
-                    libraryGrid.appendChild(item);
-                });
-            }
+    if (libraryGames.length === 0) {
+        libraryGrid.innerHTML = `
+            <div class="empty-library-msg">
+                <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                <p>Your workspace is empty. Save games from the software store.</p>
+            </div>
+        `;
+        return;
+    }
+
+    libraryGames.forEach((game) => {
+        const item = document.createElement('div');
+        item.className = 'store-item';
+        item.style.background = `linear-gradient(to top, rgba(3, 5, 10, 0.95) 20%, rgba(3, 5, 10, 0.2) 100%), url('${game.bg || game.image}') center/cover`;
+        
+        item.innerHTML = `
+            <div class="store-item-details">
+                <p class="item-title">${game.name}</p>
+                <p class="item-price launch-badge"><i class="fas fa-play" style="font-size:10px; margin-right:6px;"></i> Launch</p>
+            </div>
+        `;
+        
+        item.onclick = () => {
+            this.launchIframeRuntime(game.file_src);
+        };
+        
+        libraryGrid.appendChild(item);
+    });
+}
 
             updateDashboardHero(game, selectedIcon) {
                 this.shadowRoot.querySelectorAll('.app-icon').forEach(el => el.classList.remove('active'));
