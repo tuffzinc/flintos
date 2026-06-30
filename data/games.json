@@ -16,22 +16,6 @@
     "featured": true
   },
   {
-    "name": "Undertale",
-    "image": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=150&q=80",
-    "bg": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000",
-    "description": "The RPG game where you don't have to destroy anyone. Player choice is paramount as you navigate a world populated by quirky monsters.",
-    "file_src": "/games/undertale/index.html",
-    "featured": false
-  },
-  {
-    "name": "Deltarune",
-    "image": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=150&q=80",
-    "bg": "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=2000",
-    "description": "Toby Fox's alternative tale following a brand new set of heroes. Fall into the dark world and fulfill the ancient prophecy.",
-    "file_src": "/games/deltarune/launch.bin",
-    "featured": false
-  },
-  {
     "name": "Totally Accurate Battle Simulator",
     "image": "/data/games/tabs/logo.png",
     "bg": "/data/games/tabs/banner.png",
