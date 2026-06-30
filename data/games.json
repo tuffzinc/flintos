@@ -19,8 +19,16 @@
     "name": "Totally Accurate Battle Simulator",
     "image": "/data/games/tabs/logo.png",
     "bg": "/data/games/tabs/banner.png",
-    "description": "a hilarious, physics-based tactical strategy game developed by Landfall.",
+    "description": "A hilarious, physics-based tactical strategy game developed by Landfall.",
     "file_src": "/data/games/tabs/game.html",
     "featured": true
+  },
+  {
+    "name": "Celeste",
+    "image": "/data/games/celeste/logo.png",
+    "bg": "/data/games/celeste/banner.png",
+    "description": "Brave hundreds of hand-crafted challenges in this super-tight platformer, as you help Madeline survive her journey to the top of Celeste Mountain!",
+    "file_src": "/data/games/celeste/game.html",
+    "featured": false
   }
 ]
