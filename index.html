@@ -321,28 +321,27 @@
                 }
             }
 
-            renderHomeGames(games) {
+renderHomeGames(games) {
                 const appRow = this.shadowRoot.getElementById('dynamic-app-row');
                 if (!appRow) return;
 
                 appRow.innerHTML = '';
 
-const history = JSON.parse(localStorage.getItem('flintos_history')) || [];
+                const history = JSON.parse(localStorage.getItem('flintos_history')) || [];
+                const homeGames = games.filter(game => game.featured === true || history.includes(game.name));
 
-const homeGames = games.filter(game => game.featured === true || history.includes(game.name));
+                homeGames.sort((a, b) => {
+                    const idxA = history.indexOf(a.name);
+                    const idxB = history.indexOf(b.name);
+                    
+                    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                    if (idxA !== -1) return -1;
+                    if (idxB !== -1) return 1;
+                    return 0;
+                });
 
-homeGames.sort((a, b) => {
-    const idxA = history.indexOf(a.name);
-    const idxB = history.indexOf(b.name);
-    
-    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-    if (idxA !== -1) return -1;
-    if (idxB !== -1) return 1;
-    return 0;
-});
-
-homeGames.forEach((game) => {
-    const icon = document.createElement('div');
+                homeGames.forEach((game) => {
+                    const icon = document.createElement('div');
                     icon.className = 'app-icon';
                     icon.style.backgroundImage = `url('${game.image}')`;
                     icon.style.backgroundSize = 'cover';
@@ -371,17 +370,13 @@ homeGames.forEach((game) => {
                 const heroContent = this.shadowRoot.getElementById('hero-content');
                 const emptyState = this.shadowRoot.getElementById('empty-state');
 
-if (homeGames.length > 0) {
-    const firstGameIcon = appRow.querySelector('.app-icon:not(.library-icon)');
-    if (firstGameIcon) {
-        this.updateDashboardHero(homeGames[0], firstGameIcon);
-    }
-    
-    if (heroContent) heroContent.style.display = 'block';
-    if (emptyState) emptyState.style.display = 'none';
-}
+                if (homeGames.length > 0) {
+                    const firstGameIcon = appRow.querySelector('.app-icon:not(.library-icon)');
+                    if (firstGameIcon) {
+                        this.updateDashboardHero(homeGames[0], firstGameIcon);
+                    }
                     
-if (heroContent) heroContent.style.display = 'block';
+                    if (heroContent) heroContent.style.display = 'block';
                     if (emptyState) emptyState.style.display = 'none';
                 } else {
                     const title = this.shadowRoot.getElementById('hero-title');
