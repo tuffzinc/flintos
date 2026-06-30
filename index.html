@@ -11,7 +11,7 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #000000;
+            background-color: #05070f;
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
@@ -30,6 +30,7 @@
                 super();
                 this.attachShadow({ mode: 'open' });
                 this.currentActiveFileSrc = '';
+                this.timeInterval = null;
             }
 
             async connectedCallback() {
@@ -39,7 +40,7 @@
                         :host { display: block; width: 100vw; height: 100vh; }
                         #app-container { width: 100%; height: 100%; position: relative; }
                         
-                        /* Sandboxed Game Engine Player Overlay Styles */
+                        /* Premium Console Player Sandbox Layer */
                         #game-layer {
                             display: none;
                             position: fixed;
@@ -48,6 +49,14 @@
                             z-index: 99999;
                             background-color: #000000;
                         }
+                        #game-layer.active {
+                            display: block;
+                            animation: gameLaunch 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+                        }
+                        @keyframes gameLaunch {
+                            from { opacity: 0; transform: scale(1.04); }
+                            to { opacity: 1; transform: scale(1); }
+                        }
                         #game-frame {
                             width: 100%; height: 100%;
                             border: none;
@@ -55,29 +64,31 @@
                         }
                         #close-game-btn {
                             position: absolute;
-                            top: 20px; 
-                            right: 20px;
-                            background: rgba(20, 20, 25, 0.6);
-                            color: rgba(255, 255, 255, 0.9);
-                            border: 1px solid rgba(255, 255, 255, 0.15);
-                            padding: 6px 14px;                
-                            border-radius: 8px;              
-                            font-size: 0.8rem;                
-                            font-weight: 500;       
+                            top: 25px; 
+                            right: 25px;
+                            background: rgba(15, 15, 25, 0.7);
+                            color: #ffffff;
+                            border: 1px solid rgba(255, 255, 255, 0.12);
+                            padding: 10px 22px;                
+                            border-radius: 30px;              
+                            font-size: 0.9rem;                
+                            font-weight: 600;       
                             cursor: pointer;
-                            backdrop-filter: blur(12px);
-                            -webkit-backdrop-filter: blur(12px);
-                            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                            backdrop-filter: blur(20px);
+                            -webkit-backdrop-filter: blur(20px);
+                            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
                             z-index: 100000;
                             display: flex;
                             align-items: center;
-                            gap: 6px;
+                            gap: 8px;
+                            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
                         }
                         #close-game-btn:hover {
-                            background: rgba(255, 255, 255, 0.95);
+                            background: #ffffff;
                             color: #000000;
                             border-color: #ffffff;
-                            transform: scale(1.04);
+                            transform: translateY(-2px);
+                            box-shadow: 0 8px 25px rgba(255,255,255,0.25);
                         }
                     </style>
                     
@@ -115,7 +126,6 @@
             }
 
             bindEvents(currentView) {
-                // Main Iframe Runtime Subsystem Control Hooks
                 const closeGameBtn = this.shadowRoot.getElementById('close-game-btn');
                 if (closeGameBtn) {
                     closeGameBtn.onclick = () => {
@@ -123,38 +133,33 @@
                         const gameFrame = this.shadowRoot.getElementById('game-frame');
                         if (gameLayer && gameFrame) {
                             gameFrame.src = 'about:blank';
-                            gameLayer.style.display = 'none';
+                            gameLayer.classList.remove('active');
                         }
                     };
                 }
 
                 const enterBtn = this.shadowRoot.getElementById('enter-home');
                 if (enterBtn) {
-                    enterBtn.addEventListener('click', () => {
+                    enterBtn.onclick = () => {
                         localStorage.setItem('flintos_visited', 'true');
                         this.loadView('/public/home.html');
-                    });
-                }
-
-                const storeBtn = this.shadowRoot.getElementById('store-btn');
-                if (storeBtn) {
-                    storeBtn.addEventListener('click', () => this.loadView('/public/store.html'));
+                    };
                 }
 
                 const backBtn = this.shadowRoot.getElementById('back-btn');
                 if (backBtn) {
-                    backBtn.addEventListener('click', () => this.loadView('/public/home.html'));
+                    backBtn.onclick = () => this.loadView('/public/home.html');
                 }
 
                 const playBtn = this.shadowRoot.getElementById('play-btn');
                 if (playBtn) {
-                    playBtn.addEventListener('click', () => {
+                    playBtn.onclick = () => {
                         if (this.currentActiveFileSrc) {
                             this.launchIframeRuntime(this.currentActiveFileSrc);
                         } else {
-                            alert("FlintOS Error: No execution sequence target loaded.");
+                            alert("FlintOS Error: No execution target selected.");
                         }
-                    });
+                    };
                 }
                 
                 const timeEl = this.shadowRoot.getElementById('current-time');
@@ -164,6 +169,9 @@
                         timeEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     };
                     updateTime();
+                    if (!this.timeInterval) {
+                        this.timeInterval = setInterval(updateTime, 30000);
+                    }
                 }
 
                 if (currentView === '/public/home.html') {
@@ -195,52 +203,56 @@
                 const appRow = this.shadowRoot.getElementById('dynamic-app-row');
                 if (!appRow) return;
 
-                const storeBtn = this.shadowRoot.getElementById('store-btn');
                 appRow.innerHTML = '';
-                if (storeBtn) appRow.appendChild(storeBtn);
 
+                // Dynamic System Navigation Mount: Store Button
+                const storeIcon = document.createElement('div');
+                storeIcon.className = 'app-icon system-btn store-btn';
+                storeIcon.id = 'store-btn';
+                storeIcon.innerHTML = `<i class="fas fa-bag-shopping"></i><span>Store</span>`;
+                storeIcon.onclick = () => this.loadView('/public/store.html');
+                appRow.appendChild(storeIcon);
+
+                // Dynamic System Navigation Mount: Library Button
+                const libraryIcon = document.createElement('div');
+                libraryIcon.className = 'app-icon system-btn library-btn';
+                libraryIcon.id = 'library-btn';
+                libraryIcon.innerHTML = `<i class="fas fa-layer-group"></i><span>Library</span>`;
+                libraryIcon.onclick = () => this.loadView('/public/library.html');
+                appRow.appendChild(libraryIcon);
+
+                // Populate Saved App Array Blocks
                 const savedIds = JSON.parse(localStorage.getItem('flintos_saved')) || [];
                 const savedGames = games.filter(game => savedIds.includes(game.id));
 
                 savedGames.forEach((game) => {
                     const icon = document.createElement('div');
-                    icon.className = 'app-icon';
+                    icon.className = 'app-icon game-icon';
                     icon.style.backgroundImage = `url('${game.image}')`;
                     icon.style.backgroundSize = 'cover';
                     icon.style.backgroundPosition = 'center';
-                    icon.style.backgroundRepeat = 'no-repeat';
                     
-                    icon.addEventListener('click', () => this.updateDashboardHero(game, icon));
+                    icon.onclick = () => this.updateDashboardHero(game, icon);
                     appRow.appendChild(icon);
                 });
 
-                // Create and Append Library Icon Node with Event Listener
-                const libraryIcon = document.createElement('div');
-                libraryIcon.className = 'app-icon library-icon';
-                libraryIcon.style.background = 'rgba(255,255,255,0.05)';
-                libraryIcon.style.display = 'flex';
-                libraryIcon.style.alignItems = 'center';
-                libraryIcon.style.justifyContent = 'center';
-                libraryIcon.style.fontSize = '11px';
-                libraryIcon.style.color = 'rgba(255,255,255,0.6)';
-                libraryIcon.style.flexDirection = 'column';
-                libraryIcon.innerHTML = `<i class="fas fa-layer-group" style="margin-bottom:4px; font-size:14px; display:block; text-align:center;"></i><span>Library</span>`;
-                
-                libraryIcon.addEventListener('click', () => this.loadView('/public/library.html'));
-                appRow.appendChild(libraryIcon);
+                const heroContent = this.shadowRoot.getElementById('hero-content');
+                const emptyState = this.shadowRoot.getElementById('empty-state');
 
                 if (savedGames.length > 0) {
-                    const firstGameIcon = appRow.querySelector('.app-icon:not(.store-btn):not(.library-icon)');
+                    if (heroContent) heroContent.style.display = 'block';
+                    if (emptyState) emptyState.style.display = 'none';
+                    
+                    const firstGameIcon = appRow.querySelector('.game-icon');
                     if (firstGameIcon) {
                         this.updateDashboardHero(savedGames[0], firstGameIcon);
                     }
                 } else {
-                    const title = this.shadowRoot.getElementById('hero-title');
-                    const desc = this.shadowRoot.getElementById('hero-desc');
+                    if (heroContent) heroContent.style.display = 'none';
+                    if (emptyState) emptyState.style.display = 'block';
+                    
                     const screen = this.shadowRoot.getElementById('home-screen');
-                    if (title) title.textContent = "Welcome to FlintOS";
-                    if (desc) desc.textContent = "Your dashboard row is currently clear. Jump into the Store menu above to save games directly into your workspace.";
-                    if (screen) screen.style.backgroundImage = "linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.95) 100%)";
+                    if (screen) screen.style.backgroundImage = "linear-gradient(180deg, rgba(10,16,32,0.85) 0%, rgba(3,5,10,0.98) 100%)";
                 }
             }
 
@@ -255,17 +267,19 @@
                     const isSaved = savedIds.includes(game.id);
                     const item = document.createElement('div');
                     item.className = 'store-item';
-                    item.style.background = `linear-gradient(to top, rgba(0,0,0,0.95) 15%, rgba(0,0,0,0.15) 100%), url('${game.bg || game.image}') center/cover`;
+                    item.style.background = `linear-gradient(to top, rgba(3, 5, 10, 0.95) 20%, rgba(3, 5, 10, 0.2) 100%), url('${game.bg || game.image}') center/cover`;
                     
                     item.innerHTML = `
-                        <p class="item-title">${game.name}</p>
-                        <p class="item-price" style="${isSaved ? 'background:#1b5e20;' : ''}">
-                            <i class="${isSaved ? 'fas fa-check' : 'fas fa-download'}" style="font-size:10px; margin-right:5px;"></i> 
-                            ${isSaved ? 'Saved & Launch' : 'Save Game'}
-                        </p>
+                        <div class="store-item-details">
+                            <p class="item-title">${game.name}</p>
+                            <p class="item-price" style="${isSaved ? 'background: linear-gradient(135deg, #11998e, #38ef7d); border-color: transparent;' : ''}">
+                                <i class="${isSaved ? 'fas fa-check' : 'fas fa-download'}" style="font-size:11px; margin-right:6px;"></i> 
+                                ${isSaved ? 'Saved & Play' : 'Save Game'}
+                            </p>
+                        </div>
                     `;
                     
-                    item.addEventListener('click', () => {
+                    item.onclick = () => {
                         if (!isSaved) {
                             savedIds.push(game.id);
                             localStorage.setItem('flintos_saved', JSON.stringify(savedIds));
@@ -273,7 +287,7 @@
                         } else {
                             this.launchIframeRuntime(game.file_src);
                         }
-                    });
+                    };
                     
                     storeGrid.appendChild(item);
                 });
@@ -288,23 +302,30 @@
                 const libraryGames = games.filter(game => savedIds.includes(game.id));
 
                 if (libraryGames.length === 0) {
-                    libraryGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; opacity: 0.5; padding-top: 50px;">Your collection is empty. Add games from the system store panel.</p>`;
+                    libraryGrid.innerHTML = `
+                        <div class="empty-library-msg">
+                            <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                            <p>Your workspace is empty. Save games from the software store.</p>
+                        </div>
+                    `;
                     return;
                 }
 
                 libraryGames.forEach((game) => {
                     const item = document.createElement('div');
                     item.className = 'store-item';
-                    item.style.background = `linear-gradient(to top, rgba(0,0,0,0.95) 15%, rgba(0,0,0,0.15) 100%), url('${game.bg || game.image}') center/cover`;
+                    item.style.background = `linear-gradient(to top, rgba(3, 5, 10, 0.95) 20%, rgba(3, 5, 10, 0.2) 100%), url('${game.bg || game.image}') center/cover`;
                     
                     item.innerHTML = `
-                        <p class="item-title">${game.name}</p>
-                        <p class="item-price"><i class="fas fa-play" style="font-size:10px; margin-right:5px;"></i> Launch</p>
+                        <div class="store-item-details">
+                            <p class="item-title">${game.name}</p>
+                            <p class="item-price launch-badge"><i class="fas fa-play" style="font-size:10px; margin-right:6px;"></i> Launch</p>
+                        </div>
                     `;
                     
-                    item.addEventListener('click', () => {
+                    item.onclick = () => {
                         this.launchIframeRuntime(game.file_src);
-                    });
+                    };
                     
                     libraryGrid.appendChild(item);
                 });
@@ -321,7 +342,7 @@
                 const desc = this.shadowRoot.getElementById('hero-desc');
 
                 if (screen) {
-                    screen.style.backgroundImage = `linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.9) 100%), url('${game.bg}')`;
+                    screen.style.backgroundImage = `linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(5,8,20,0.5) 40%, rgba(5,8,20,0.95) 100%), url('${game.bg}')`;
                 }
                 if (title) title.textContent = game.name;
                 if (desc) desc.textContent = game.description;
@@ -332,7 +353,7 @@
                 const gameFrame = this.shadowRoot.getElementById('game-frame');
                 if (gameLayer && gameFrame) {
                     gameFrame.src = sourceUrl;
-                    gameLayer.style.display = 'block';
+                    gameLayer.classList.add('active');
                 }
             }
         }
